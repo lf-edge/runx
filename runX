@@ -8,12 +8,6 @@ cmd=""
 containerid=""
 while (( "$#" ))
 do
-    if [[ $1 = "--console-socket" ]]
-    then
-        pty=$2
-        #cp $pty /root/pty
-        echo LOL $pty >> /tmp/1
-    fi
     if [[ $1 = "--"* ]]
     then
         shift
