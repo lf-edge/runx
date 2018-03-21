@@ -1,0 +1,46 @@
+#!/bin/bash
+
+workpath=/usr/share/runX
+
+containerid=$1
+mountid=`cat /var/lib/docker/image/overlay2/layerdb/mounts/$containerid/mount-id`
+mountpoint="/var/lib/docker/overlay2/$mountid/merged"
+configfile="/var/lib/docker/containers/$containerid/config.v2.json"
+appname=`cat $configfile | jq '.["Path"]'`
+cmdline=`cat $configfile | jq  -c -r '.["Config"]["Cmd"] | join("\" \"")'`
+cmdline="\"$cmdline\""
+
+bridge=`cat $configfile | jq  -c -r '.["NetworkSettings"]["Networks"]["bridge"]'`
+if test "$bridge" = "null"
+then
+	pvcalls=1
+else
+	pvcalls=0
+    gw=`cat $configfile | jq  -c -r '.["NetworkSettings"]["Networks"]["bridge"]["Gateway"]'`
+    ip=`cat $configfile | jq  -c -r '.["NetworkSettings"]["Networks"]["bridge"]["IPAddress"]'`
+fi
+
+temp=`mktemp -d`
+outconfig=$temp/test.0
+
+cd $temp
+rm $outconfig &> /dev/null
+echo "kernel='$workpath/kernel'" >> $outconfig
+echo "ramdisk='$workpath/initrd'" >> $outconfig
+echo "memory = 1024" >> $outconfig
+echo "vcpus = 2" >> $outconfig
+echo "serial='pty'" >> $outconfig
+echo "boot='c'" >> $outconfig
+if test $pvcalls -eq 0
+then
+	echo "vif=['bridge="docker0"']" >> $outconfig
+	echo extra=\'console=hvc0 root=9p ip=$ip gw=$gw route=$route\' >> $outconfig 
+else
+	echo "pvcalls=['']" >> $outconfig
+	echo extra=\'console=hvc0 root=9p pvcalls=1\' >> $outconfig
+fi
+echo "vfb=['vnc=1']" >> $outconfig
+echo "p9=[ 'tag=share_dir,security_model=none,path=$mountpoint' ]" >> $outconfig
+echo "name=\"$containerid\"" >> $outconfig
+echo $cmdline > $mountpoint/cmdline
+xl create $outconfig

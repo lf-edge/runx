@@ -1,0 +1,13 @@
+#!/bin/bash
+
+workpath=/usr/share/runX
+
+containerid=$1
+mountid=`cat /var/lib/docker/image/aufs/layerdb/mounts/$containerid/mount-id`
+mountpoint="/var/lib/docker/aufs/mnt/$mountid"
+configfile="/var/lib/docker/containers/$containerid/config.v2.json"
+appname=`cat $configfile | jq '.["Path"]'`
+cmdline=`cat $configfile | jq  -c -r '.["Config"]["Cmd"] | join("\" \"")'`
+cmdline="\"$cmdline\""
+
+xl destroy $containerid &> /dev/null

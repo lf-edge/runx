@@ -1,0 +1,31 @@
+#!/bin/bash
+
+workpath=/usr/share/runX
+
+args=$*
+
+while (( "$#" ))
+do
+    if [[ $1 = "--"* ]]
+    then
+        shift
+        shift
+        continue
+    fi
+    break
+done
+cmd=$1
+containerid=$2
+
+if test $cmd = "state"
+then
+    $workpath/state $2
+elif test $cmd = "start"
+then
+    $workpath/start $2
+elif test $cmd = "delete"
+then
+    $workpath/delete $2
+else
+    /usr/bin/docker-runc.orig $args
+fi

@@ -1,0 +1,49 @@
+#!/bin/bash
+
+if [[ $ARCH = "x86"  ]]
+then
+    image="bzImage"
+elif [[ $ARCH = "arm64" ]]
+then
+    image="Image.gz"
+elif [[ $ARCH = "arm" ]]
+then
+    image="zImage"
+fi
+
+kernel_stuffdir=`readlink -f kernel`
+kernel_outpath=$kernel_stuffdir/out
+kernel_builddir=$kernel_stuffdir/build
+kernel_out=$kernel_outpath/kernel
+
+kernel_version=4.10
+kernel_name=linux-$kernel_version
+kernel_tarball="$kernel_name".tar.xz
+kernel_url=https://www.kernel.org/pub/linux/kernel/v4.x/"$kernel_tarball"
+kernel_src_config="$kernel_stuffdir"/cutdown-config.$ARCH
+kernel_patchesdir="$kernel_stuffdir"/patches
+kernel_image="$kernel_builddir"/"$kernel_name"/arch/"$ARCH"/boot/"$image"
+
+
+rm -rf $kernel_outpath
+mkdir -p $kernel_outpath
+mkdir -p $kernel_builddir
+
+if [[ ! -f $kernel_builddir/$kernel_tarball ]]
+then
+    wget -O $kernel_builddir/$kernel_tarball --tries=20 $kernel_url
+fi
+if [[ ! -d $kernel_builddir/$kernel_name ]]
+then
+    tar --extract --xz --touch --file="$kernel_builddir/$kernel_tarball" --directory="$kernel_builddir"
+    cd $kernel_builddir/$kernel_name
+    for i in $kernel_patchesdir/*
+    do
+        patch -p1 < $i
+    done
+    cp $kernel_src_config .config
+fi
+cd $kernel_builddir/$kernel_name
+make -j4 $image
+
+cp $kernel_image $kernel_out
