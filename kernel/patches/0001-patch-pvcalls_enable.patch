@@ -1,0 +1,202 @@
+From b2d2494d918609daa252ed8cfa486fa65c8ece1b Mon Sep 17 00:00:00 2001
+From: Stefano Stabellini <sstabellini@kernel.org>
+Date: Mon, 26 Feb 2018 17:24:57 -0800
+Subject: [PATCH 1/4] patch pvcalls_enable
+
+---
+ drivers/xen/Makefile  |   1 +
+ drivers/xen/pvcalls.c | 123 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/xen/pvcalls.h |  13 ++++++
+ net/ipv4/af_inet.c    |   7 ++-
+ 4 files changed, 143 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/xen/pvcalls.c
+ create mode 100644 include/xen/pvcalls.h
+
+diff --git a/drivers/xen/Makefile b/drivers/xen/Makefile
+index 451e833..87352a8 100644
+--- a/drivers/xen/Makefile
++++ b/drivers/xen/Makefile
+@@ -38,6 +38,7 @@ obj-$(CONFIG_XEN_SCSI_BACKEND)		+= xen-scsiback.o
+ obj-$(CONFIG_XEN_AUTO_XLATE)		+= xlate_mmu.o
+ obj-$(CONFIG_XEN_PVCALLS_BACKEND)	+= pvcalls-back.o
+ obj-$(CONFIG_XEN_PVCALLS_FRONTEND)	+= pvcalls-front.o
++obj-$(CONFIG_XEN_PVCALLS_FRONTEND)	+= pvcalls.o
+ xen-evtchn-y				:= evtchn.o
+ xen-gntdev-y				:= gntdev.o
+ xen-gntalloc-y				:= gntalloc.o
+diff --git a/drivers/xen/pvcalls.c b/drivers/xen/pvcalls.c
+new file mode 100644
+index 0000000..b5cb160c
+--- /dev/null
++++ b/drivers/xen/pvcalls.c
+@@ -0,0 +1,123 @@
++#include <linux/types.h>
++#include <linux/bitops.h>
++#include <linux/cred.h>
++#include <linux/init.h>
++#include <linux/io.h>
++#include <linux/kernel.h>
++#include <linux/kmod.h>
++#include <linux/list.h>
++#include <linux/miscdevice.h>
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/net.h>
++#include <linux/poll.h>
++#include <linux/skbuff.h>
++#include <linux/smp.h>
++#include <linux/socket.h>
++#include <linux/stddef.h>
++#include <linux/unistd.h>
++#include <linux/wait.h>
++#include <linux/workqueue.h>
++#include <net/sock.h>
++#include <net/inet_common.h>
++
++#include "pvcalls-front.h"
++
++static int
++pvcalls_bind(struct socket *sock, struct sockaddr *addr, int addr_len)
++{
++	int ret;
++	ret = pvcalls_front_socket(sock);
++	if (ret < 0)
++		return ret;
++	return pvcalls_front_bind(sock, addr, addr_len);
++}
++
++static int pvcalls_stream_connect(struct socket *sock, struct sockaddr *addr,
++				int addr_len, int flags)
++{
++	int ret;
++	ret = pvcalls_front_socket(sock);
++	if (ret < 0)
++		return ret;
++	return pvcalls_front_connect(sock, addr, addr_len, flags);
++}
++
++static int pvcalls_accept(struct socket *sock, struct socket *newsock, int flags, bool kern)
++{
++	return pvcalls_front_accept(sock, newsock, flags);
++}
++
++static int pvcalls_getname(struct socket *sock,
++			 struct sockaddr *uaddr, int *uaddr_len, int peer)
++{
++	DECLARE_SOCKADDR(struct sockaddr_in *, sin, uaddr);
++
++	sin->sin_family = AF_INET;
++	memset(sin->sin_zero, 0, sizeof(sin->sin_zero));
++	*uaddr_len = sizeof(*sin);
++	return 0;
++}
++
++static unsigned int pvcalls_poll(struct file *file, struct socket *sock,
++			       poll_table *wait)
++{
++	return pvcalls_front_poll(file, sock, wait);
++}
++
++static int pvcalls_listen(struct socket *sock, int backlog)
++{
++	return pvcalls_front_listen(sock, backlog);
++}
++
++static int pvcalls_stream_sendmsg(struct socket *sock, struct msghdr *msg,
++				size_t len)
++{
++	return pvcalls_front_sendmsg(sock, msg, len);
++}
++
++static int
++pvcalls_stream_recvmsg(struct socket *sock, struct msghdr *msg, size_t len,
++		     int flags)
++{
++	return pvcalls_front_recvmsg(sock, msg, len, flags);
++}
++
++static int pvcalls_release(struct socket *s)
++{
++	return pvcalls_front_release(s);
++}
++
++static int pvcalls_shutdown(struct socket *s, int h)
++{
++	return -ENOTSUPP;
++}
++
++const struct proto_ops pvcalls_stream_ops = {
++	.family = PF_INET,
++	.owner = THIS_MODULE,
++	.release = pvcalls_release,
++	.bind = pvcalls_bind,
++	.connect = pvcalls_stream_connect,
++	.socketpair = sock_no_socketpair,
++	.accept = pvcalls_accept,
++	.getname = pvcalls_getname,
++	.poll = pvcalls_poll,
++	.ioctl = sock_no_ioctl,
++	.listen = pvcalls_listen,
++	.shutdown = pvcalls_shutdown,
++	.setsockopt = sock_no_setsockopt,
++	.getsockopt = sock_no_getsockopt,
++	.sendmsg = pvcalls_stream_sendmsg,
++	.recvmsg = pvcalls_stream_recvmsg,
++	.mmap = sock_no_mmap,
++	.sendpage = sock_no_sendpage,
++};
++
++bool pvcalls = false;
++static __init int xen_parse_pvcalls(char *arg)
++{
++       pvcalls = true;
++       return 0;
++}
++early_param("pvcalls", xen_parse_pvcalls);
+diff --git a/include/xen/pvcalls.h b/include/xen/pvcalls.h
+new file mode 100644
+index 0000000..7a61475
+--- /dev/null
++++ b/include/xen/pvcalls.h
+@@ -0,0 +1,13 @@
++#ifndef __LINUX_NET_PVCALLS_H
++#define __LINUX_NET_PVCALLS_H
++
++#include <linux/net.h>
++
++#ifdef CONFIG_XEN_PVCALLS_FRONTEND
++extern bool pvcalls;
++#else
++#define pvcalls (0)
++#endif
++extern const struct proto_ops pvcalls_stream_ops;
++
++#endif
+diff --git a/net/ipv4/af_inet.c b/net/ipv4/af_inet.c
+index f00499a..6dc38c0 100644
+--- a/net/ipv4/af_inet.c
++++ b/net/ipv4/af_inet.c
+@@ -120,7 +120,7 @@
+ #include <linux/mroute.h>
+ #endif
+ #include <net/l3mdev.h>
+-
++#include <xen/pvcalls.h>
+ 
+ /* The inetsw table contains everything that inet_create needs to
+  * build a new socket.
+@@ -1869,6 +1869,11 @@ static int __init inet_init(void)
+ 	for (r = &inetsw[0]; r < &inetsw[SOCK_MAX]; ++r)
+ 		INIT_LIST_HEAD(r);
+ 
++	if (pvcalls) {
++		pr_info("Enabling pvcalls for AF_INET SOCK_STREAM\n");
++		inetsw_array[0].ops = &pvcalls_stream_ops;
++	}
++
+ 	for (q = inetsw_array; q < &inetsw_array[INETSW_ARRAY_LEN]; ++q)
+ 		inet_register_protosw(q);
+ 
+-- 
+1.9.1
+

@@ -1,0 +1,38 @@
+From 1eebb3bb08a7d88ab62069d54b62fcbdaf1a48f3 Mon Sep 17 00:00:00 2001
+From: Stefano Stabellini <sstabellini@kernel.org>
+Date: Mon, 26 Feb 2018 20:15:09 -0800
+Subject: [PATCH 3/4] pvcalls-front: wait for other operations to return when
+ release passive sockets
+
+Passive sockets can have ongoing operations on them, specifically, we
+have two wait_event_interruptable calls in pvcalls_front_accept.
+
+Add two wake_up calls in pvcalls_front_release, then wait for the
+potential waiters to return and release the sock_mapping refcount.
+
+Signed-off-by: Stefano Stabellini <stefano@aporeto.com>
+Acked-by: Juergen Gross <jgross@suse.com>
+---
+ drivers/xen/pvcalls-front.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/drivers/xen/pvcalls-front.c b/drivers/xen/pvcalls-front.c
+index 18d1bac..ca5b773 100644
+--- a/drivers/xen/pvcalls-front.c
++++ b/drivers/xen/pvcalls-front.c
+@@ -1018,6 +1018,12 @@ int pvcalls_front_release(struct socket *sock)
+ 
+ 		pvcalls_front_free_map(bedata, map);
+ 	} else {
++		wake_up(&bedata->inflight_req);
++		wake_up(&map->passive.inflight_accept_req);
++
++		while (atomic_read(&map->refcount) > 1)
++			cpu_relax();
++
+ 		spin_lock(&bedata->socket_lock);
+ 		list_del(&map->list);
+ 		spin_unlock(&bedata->socket_lock);
+-- 
+1.9.1
+

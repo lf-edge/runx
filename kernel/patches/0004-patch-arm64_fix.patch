@@ -1,0 +1,45 @@
+From 6eab83a68c6efb1d3ad37e1db478cfe25a8948ba Mon Sep 17 00:00:00 2001
+From: Stefano Stabellini <sstabellini@kernel.org>
+Date: Wed, 28 Feb 2018 17:50:34 -0800
+Subject: [PATCH 4/4] patch arm64_fix
+
+---
+ drivers/xen/pvcalls-front.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/xen/pvcalls-front.c b/drivers/xen/pvcalls-front.c
+index ca5b773..582929e 100644
+--- a/drivers/xen/pvcalls-front.c
++++ b/drivers/xen/pvcalls-front.c
+@@ -73,20 +73,25 @@ struct sock_mapping {
+ 			wait_queue_head_t inflight_conn_req;
+ 		} active;
+ 		struct {
+-		/* Socket status */
++		/* 
++		 * Socket status, needs to be 64-bit aligned due to the
++		 * test_and_* functions which have this requirement on arm64.
++		 */
+ #define PVCALLS_STATUS_UNINITALIZED  0
+ #define PVCALLS_STATUS_BIND          1
+ #define PVCALLS_STATUS_LISTEN        2
+-			uint8_t status;
++			uint8_t status __attribute__((aligned(8)));
+ 		/*
+ 		 * Internal state-machine flags.
+ 		 * Only one accept operation can be inflight for a socket.
+ 		 * Only one poll operation can be inflight for a given socket.
++		 * flags needs to be 64-bit aligned due to the test_and_*
++		 * functions which have this requirement on arm64.
+ 		 */
+ #define PVCALLS_FLAG_ACCEPT_INFLIGHT 0
+ #define PVCALLS_FLAG_POLL_INFLIGHT   1
+ #define PVCALLS_FLAG_POLL_RET        2
+-			uint8_t flags;
++			uint8_t flags __attribute__((aligned(8)));
+ 			uint32_t inflight_req_id;
+ 			struct sock_mapping *accept_map;
+ 			wait_queue_head_t inflight_accept_req;
+-- 
+1.9.1
+
