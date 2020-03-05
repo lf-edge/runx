@@ -3,6 +3,7 @@
 workpath=/usr/share/runX
 
 containerid=$1
+bridge_socket=$2
 mountid=`cat /var/lib/docker/image/overlay2/layerdb/mounts/$containerid/mount-id`
 mountpoint="/var/lib/docker/overlay2/$mountid/merged"
 configfile="/var/lib/docker/containers/$containerid/config.v2.json"
@@ -44,3 +45,4 @@ echo "p9=[ 'tag=share_dir,security_model=none,path=$mountpoint' ]" >> $outconfig
 echo "name=\"$containerid\"" >> $outconfig
 echo $cmdline > $mountpoint/cmdline
 xl create $outconfig
+daemonize $workpath/serial_start "$containerid" "$bridge_socket"

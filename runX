@@ -1,38 +1,72 @@
 #!/bin/bash
 
 workpath=/usr/share/runX
+consolepath=/tmp/runx_consoles
 
-args=$*
+args=""
 
+recvtty_sock="`mktemp -d`"/"fake.sock"
+guestconsole=""
 cmd=""
 containerid=""
 while (( "$#" ))
 do
+    if [[ $1 = "--console-socket" ]]
+    then
+        guestconsole="$2"
+        args="$args $1 $recvtty_sock"
+        shift
+        shift
+        continue
+    fi
     if [[ $1 = "--"* ]]
     then
+        args="$args $1 $2"
         shift
         shift
         continue
     fi
     if test -z "$cmd"
     then
+        args="$args $1"
         cmd=$1
         shift
         continue
     fi
+    args="$args $1"
     containerid=$1
     break
 done
+
+if test $cmd != "create" || test "$guestconsole" = ""
+then
+    rm -rf "`basename $recvtty_sock`"
+fi
 
 if test $cmd = "state"
 then
     $workpath/state $containerid
 elif test $cmd = "start"
 then
-    $workpath/start $containerid
+    $workpath/start $containerid "$consolepath/$containerid-bridge_socket"
 elif test $cmd = "delete"
 then
     $workpath/delete $containerid
 else
-    /usr/bin/docker-runc.orig $args
+    if test $cmd = "create" && test "$guestconsole" != ""
+    then
+        mkdir -p $consolepath
+        daemonize $workpath/serial_bridge \
+          "$consolepath/$containerid-containerd_tty" \
+          "$consolepath/$containerid-bridge_socket"
+        sleep .1
+        daemonize $workpath/serial_fd_handler \
+          "$guestconsole" \
+          "$consolepath/$containerid-containerd_tty"
+
+        # to keep runc happy...
+        daemonize $workpath/recvtty -m null $recvtty_sock
+    fi
+
+    /usr/sbin/docker-runc.org $args
 fi
