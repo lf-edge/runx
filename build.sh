@@ -17,7 +17,7 @@
 set -e
 set -o pipefail
 
-execs="start delete"
+execs="start delete serial_bridge serial_start"
 
 # Clean the repo, but save the vendor area
 if [ "x${1:-}" != "x" ] && [ "clean" == "$1" ]; then
@@ -52,6 +52,17 @@ mkdir -p target/usr/share/runX
 for i in $execs; do
     cp files/$i target/usr/share/runX
 done
+
+cd gobuild
+if [[ $ARCH = "x86" ]]
+then
+    make GOARCH=amd64
+else
+    make GOARCH=$ARCH
+fi
+cd -
+cp gobuild/serial_fd_handler target/usr/share/runX/
+cp gobuild/recvtty target/usr/share/runX/
 
 mkdir -p target/usr/sbin
 cp runX target/usr/sbin
