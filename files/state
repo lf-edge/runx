@@ -1,27 +1,30 @@
 #!/bin/bash
 
-containerid=$1
+containerid="$1"
+root="$2"
 domid=`xl list | grep "$containerid" | awk '{print$2}'`
-mountid=`cat /var/lib/docker/image/overlay2/layerdb/mounts/$containerid/mount-id`
-mountpoint="/var/lib/docker/overlay2/$mountid/merged"
+state="$root"/"$containerid/state.json"
+mountpoint=`cat $state | jq '.["config"]["rootfs"]'`
+mountpoint=`sed -e 's/^"//' -e 's/"$//' <<<"$mountpoint"`
+bundledir="`dirname $mountpoint`"
 
-if test "$domid" && test "$mountid"
+if test "$domid"
 then
     state="running"
-elif test "$mountid"
+elif test "$mountpoint"
 then
     state="created"
 fi
 
 cat << EOF
 {
-  "ociVersion": "1.0.0",
+  "ociVersion": "1.0.1-dev",
   "id": "$containerid",
   "pid": $domid,
   "status": "$state",
-  "bundle": "/run/docker/containerd/daemon/io.containerd.runtime.v1.linux/moby/$containerid",
+  "bundle": "$bundledir",
   "rootfs": "$mountpoint",
-  "created": "`date --iso-8601=seconds`",
+  "created": "`date +"%Y-%m-%dT%H:%M:%SZ"`",
   "owner": ""
 }
 EOF

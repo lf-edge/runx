@@ -2,14 +2,15 @@
 
 workpath=/usr/share/runX
 
-containerid=$1
-bridge_socket=$2
-mountid=`cat /var/lib/docker/image/overlay2/layerdb/mounts/$containerid/mount-id`
-mountpoint="/var/lib/docker/overlay2/$mountid/merged"
-configfile="/var/lib/docker/containers/$containerid/config.v2.json"
+containerid="$1"
+bridge_socket="$2"
+root="$3"
+state="$root"/"$containerid/state.json"
+mountpoint=`cat $state | jq '.["config"]["rootfs"]'`
+mountpoint=`sed -e 's/^"//' -e 's/"$//' <<<"$mountpoint"`
+configfile="`dirname $mountpoint`"/"config.json"
 appname=`cat $configfile | jq '.["Path"]'`
-cmdline=`cat $configfile | jq  -c -r '.["Config"]["Cmd"] | join("\" \"")'`
-cmdline="\"$cmdline\""
+cmdline=`cat $configfile | jq  -c -r '.["process"]["args"] | join("\" \"")'`
 
 bridge=`cat $configfile | jq  -c -r '.["NetworkSettings"]["Networks"]["bridge"]'`
 if test "$bridge" = "null"

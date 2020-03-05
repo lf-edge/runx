@@ -17,7 +17,7 @@
 set -e
 set -o pipefail
 
-execs="start delete serial_bridge serial_start"
+execs="start delete state serial_bridge serial_start"
 
 # Clean the repo, but save the vendor area
 if [ "x${1:-}" != "x" ] && [ "clean" == "$1" ]; then

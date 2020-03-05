@@ -8,14 +8,29 @@ args=""
 recvtty_sock="`mktemp -d`"/"fake.sock"
 guestconsole=""
 cmd=""
+root=""
 containerid=""
 while (( "$#" ))
 do
+    if [[ $1 = "--root" ]]
+    then
+        root=$2
+        args="$args $1 $2"
+        shift
+        shift
+        continue
+    fi
     if [[ $1 = "--console-socket" ]]
     then
         guestconsole="$2"
         args="$args $1 $recvtty_sock"
         shift
+        shift
+        continue
+    fi
+    if [[ $1 = "--no-pivot" ]]
+    then
+        args="$args $1"
         shift
         continue
     fi
@@ -45,10 +60,10 @@ fi
 
 if test $cmd = "state"
 then
-    $workpath/state $containerid
+    $workpath/state $containerid $root
 elif test $cmd = "start"
 then
-    $workpath/start $containerid "$consolepath/$containerid-bridge_socket"
+    $workpath/start $containerid "$consolepath/$containerid-bridge_socket" "$root"
 elif test $cmd = "delete"
 then
     $workpath/delete $containerid
@@ -68,5 +83,5 @@ else
         daemonize $workpath/recvtty -m null $recvtty_sock
     fi
 
-    /usr/sbin/docker-runc.org $args
+    /usr/bin/runc.orig $args
 fi
