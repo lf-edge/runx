@@ -55,7 +55,7 @@ done
 
 if test $cmd != "create" || test "$guestconsole" = ""
 then
-    rm -rf "`basename $recvtty_sock`"
+    rm -rf "$(dirname $recvtty_sock)"
 fi
 
 if test $cmd = "state"
