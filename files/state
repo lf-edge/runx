@@ -16,6 +16,13 @@ then
     state="created"
 fi
 
+# need to guess the next domid
+if ! test "$domid"
+then
+    domid=`xl list | tail -n 1 | awk '{print$2}'`
+    domid=`expr $domid + 1`
+fi
+
 cat << EOF
 {
   "ociVersion": "1.0.1-dev",
