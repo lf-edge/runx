@@ -49,3 +49,13 @@ Architecture
     +------------+--+-------------+
     |             Xen             |
     +-----------------------------+
+
+
+ContainerD invocation
+---------------------
+
+Use the following example config stanza in your
+/etc/containerd/config.toml config file to choose RunX as OCI-runtime:
+
+    [plugins.linux]
+         runtime="/usr/sbin/runX"

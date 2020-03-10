@@ -83,5 +83,5 @@ else
         daemonize $workpath/recvtty -m null $recvtty_sock
     fi
 
-    /usr/bin/runc.orig $args
+    /usr/bin/runc $args
 fi
