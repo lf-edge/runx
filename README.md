@@ -59,3 +59,42 @@ Use the following example config stanza in your
 
     [plugins.linux]
          runtime="/usr/sbin/runX"
+
+
+Networking Configuration
+------------------------
+
+To get bridge based networking working, you need to include the containerd
+option '--env NETCONF="/path/to/cni/file,name[,IP]"', where:
+    - NETCONF is the environmental varable we use to pass info from containerd
+      to runX
+    - /path/to/cni/file is the cni v2.0 file used to describe the interface
+    - name is the name of the cni interface
+    - [,IP] is the optional IP if static addresses are used, otherwise DHCP
+
+An example cni file is:
+
+```json
+{
+    "cniVersion": "0.2.0",
+    "name": "mynet",
+    "type": "bridge",
+    "bridge": "xenbr0",
+    "isGateway": true,
+    "ipMasq": true,
+    "ipam": {
+        "type": "host-local",
+        "subnet": "192.168.0.0/24",
+        "rangeStart": "192.168.0.2",
+        "rangeEnd": "192.168.0.255",
+        "gateway": "192.168.0.1",
+        "routes": [
+            { "dst": "192.168.0.0/24" }
+        ],
+     "dataDir": "/run/ipam-state"
+    },
+    "dns": {
+    "nameservers": [ "8.8.8.8" ]
+    }
+}
+```
