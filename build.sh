@@ -69,7 +69,13 @@ mkdir -p target/usr/sbin
 cp runX target/usr/sbin
 
 # Build the kernel and initrd
-kernel/make-kernel
-cp kernel/out/kernel target/usr/share/runX
-initrd/make-initrd
-cp initrd/out/initrd target/usr/share/runX
+if test \! -f target/usr/share/runX/kernel
+then
+    kernel/make-kernel
+    cp kernel/out/kernel target/usr/share/runX
+fi
+if test \! -f target/usr/share/runX/initrd
+then
+    initrd/make-initrd
+    cp initrd/out/initrd target/usr/share/runX
+fi
