@@ -24,6 +24,7 @@ if [ "x${1:-}" != "x" ] && [ "clean" == "$1" ]; then
     echo "cleaning project"
     rm -rf kernel/out
     rm -rf kernel/build
+    rm -rf initrd/out
     rm -rf target
 
     exit 0
@@ -70,5 +71,5 @@ cp runX target/usr/sbin
 # Build the kernel and initrd
 kernel/make-kernel
 cp kernel/out/kernel target/usr/share/runX
-kernel/make-initrd
-cp kernel/out/initrd target/usr/share/runX
+initrd/make-initrd
+cp initrd/out/initrd target/usr/share/runX

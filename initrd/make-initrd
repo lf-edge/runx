@@ -1,10 +1,10 @@
 #!/bin/bash
 
-outpath=`pwd`/kernel/out
+outpath=`pwd`/initrd/out
 tmpdir=`mktemp -d`
 tmpfile=`mktemp`
 initrd=$outpath/initrd
-init=`pwd`/kernel/init-initrd
+init=`pwd`/initrd/init-initrd
 rm -rf $tmpdir
 
 mkdir -p $tmpdir/bin
