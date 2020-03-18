@@ -17,6 +17,9 @@
 set -e
 set -o pipefail
 
+# Path to statically built busybox binary i.e.
+# busybox=/usr/bin/busybox-static-aarch64
+
 execs="start delete state serial_bridge serial_start"
 
 # Clean the repo, but save the vendor area

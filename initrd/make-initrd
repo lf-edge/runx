@@ -7,6 +7,12 @@ initrd=$outpath/initrd
 init=`pwd`/initrd/init-initrd
 rm -rf $tmpdir
 
+if test -z "$busybox"
+then
+    busybox=$(which busybox)
+fi
+
+mkdir -p $outpath
 mkdir -p $tmpdir/bin
 mkdir -p $tmpdir/sbin
 mkdir -p $tmpdir/etc
@@ -16,7 +22,7 @@ mkdir -p $tmpdir/sys
 mkdir -p $tmpdir/lib
 mkdir -p $tmpdir/var
 mkdir -p $tmpdir/mnt
-cp `which busybox` $tmpdir/bin
+cp "$busybox" $tmpdir/bin/busybox
 $tmpdir/bin/busybox --install $tmpdir/bin
 
 cp $init $tmpdir/init
