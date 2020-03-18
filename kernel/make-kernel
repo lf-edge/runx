@@ -44,6 +44,6 @@ then
     cp $kernel_src_config .config
 fi
 cd $kernel_builddir/$kernel_name
-make -j4 $image
+make -j "$(getconf _NPROCESSORS_ONLN)" $image
 
 cp $kernel_image $kernel_out
