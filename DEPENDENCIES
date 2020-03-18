@@ -12,7 +12,7 @@ socat
 daemonize
 
 build time:
-gcc
+gcc, if cross-compiling CROSS_COMPILE needs to be set
 make
-go
+go, GOROOT needs to be set
 qemu user static (e.g. qemu-aarch64-static) if the target architecture is different from the build architecture
