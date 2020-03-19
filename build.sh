@@ -29,6 +29,9 @@ if [ "x${1:-}" != "x" ] && [ "clean" == "$1" ]; then
     rm -rf kernel/build
     rm -rf initrd/out
     rm -rf target
+    cd gobuild
+    make clean
+    cd -
 
     exit 0
 fi
