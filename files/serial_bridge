@@ -1,8 +1,0 @@
-#!/bin/bash
-
-dev_containerd=$1
-socket_bridge=$2
-
-socat \
-	PTY,link=${dev_containerd},rawer \
-	UNIX-LISTEN:${socket_bridge}

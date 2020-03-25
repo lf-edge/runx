@@ -63,25 +63,33 @@ then
     $workpath/state $containerid $root
 elif test $cmd = "start"
 then
-    $workpath/start $containerid "$consolepath/$containerid-bridge_socket" "$root"
+    $workpath/start $containerid
 elif test $cmd = "delete"
 then
     $workpath/delete $containerid
-else
-    if test $cmd = "create" && test "$guestconsole" != ""
+elif test $cmd = "create"
+then
+    # to keep runc happy since it needs to output a PTY
+    if test "$guestconsole"
     then
-        mkdir -p $consolepath
-        daemonize $workpath/serial_bridge \
-          "$consolepath/$containerid-containerd_tty" \
-          "$consolepath/$containerid-bridge_socket"
-        sleep .1
-        daemonize $workpath/serial_fd_handler \
-          "$guestconsole" \
-          "$consolepath/$containerid-containerd_tty"
-
-        # to keep runc happy...
         daemonize $workpath/recvtty -m null $recvtty_sock
     fi
 
+    /usr/bin/runc $args
+
+    $workpath/create $containerid "$root"
+
+    if  test "$guestconsole"
+    then
+        mkdir -p $consolepath
+        daemonize $workpath/serial_start \
+          "$containerid" \
+          "$consolepath/$containerid-pty"
+        sleep .1
+        daemonize $workpath/serial_fd_handler \
+          "$guestconsole" \
+          "$consolepath/$containerid-pty"
+    fi
+else
     /usr/bin/runc $args
 fi

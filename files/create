@@ -1,0 +1,66 @@
+#!/bin/bash
+
+workpath=/usr/share/runX
+
+containerid="$1"
+root="$2"
+state="$root"/"$containerid/state.json"
+mountpoint=`cat $state | jq '.["config"]["rootfs"]'`
+mountpoint=`sed -e 's/^"//' -e 's/"$//' <<<"$mountpoint"`
+configfile="`dirname $mountpoint`"/"config.json"
+appname=`cat $configfile | jq '.["Path"]'`
+cmdline=`cat $configfile | jq  -c -r '.["process"]["args"] | join("\" \"")'`
+
+# netconf is file,type[,ip]
+netconf=`cat $configfile | jq  -c -r  '.["process"]["env"][] | select(contains("NETCONF"))'`
+netconf=`echo "$netconf" | awk -F "=" '{print $2}'`
+if test "$netconf"
+then
+    netfile=`echo "$netconf" | awk -F "," '{print $1}'`
+    netname=`echo "$netconf" | awk -F "," '{print $2}'`
+    netaddr=`echo "$netconf" | awk -F "," '{print $3}'`
+    nettype=`cat $netfile | jq -c -r "select(.[\"name\"] == \"$netname\") | .[\"type\"]"`
+
+    if test "$nettype" = "bridge"
+    then
+        pvcalls=0
+        bridge=`cat $netfile | jq -c -r "select(.[\"name\"] == \"$netname\") | .[\"bridge\"]"`
+        gw=`cat $netfile | jq -c -r "select(.[\"name\"] == \"$netname\") | .[\"ipam\"][\"gateway\"]"`
+        route=`cat $netfile | jq -c -r "select(.[\"name\"] == \"$netname\") | .[\"ipam\"][\"subnet\"]"`
+    else
+        #shouldn't get here, but if we do assume pvcalls
+        pvcalls=1
+    fi
+else
+    pvcalls=1
+fi
+
+temp=`mktemp -d`
+outconfig=$temp/test.0
+
+cd $temp
+rm $outconfig &> /dev/null
+echo "kernel='$workpath/kernel'" >> $outconfig
+echo "ramdisk='$workpath/initrd'" >> $outconfig
+echo "memory = 1024" >> $outconfig
+echo "vcpus = 2" >> $outconfig
+echo "serial='pty'" >> $outconfig
+echo "boot='c'" >> $outconfig
+if test $pvcalls -eq 0
+then
+    echo "vif=['bridge="$bridge"']" >> $outconfig
+    if test "$netaddr"
+    then
+        echo extra=\'console=hvc0 root=9p ip=$netaddr gw=$gw route=$route\' >> $outconfig
+    else
+        echo extra=\'console=hvc0 root=9p ip=dhcp\' >> $outconfig
+    fi
+else
+    echo "pvcalls=['']" >> $outconfig
+    echo extra=\'console=hvc0 root=9p pvcalls=1\' >> $outconfig
+fi
+echo "vfb=['vnc=1']" >> $outconfig
+echo "p9=[ 'tag=share_dir,security_model=none,path=$mountpoint' ]" >> $outconfig
+echo "name=\"$containerid\"" >> $outconfig
+echo $cmdline > $mountpoint/cmdline
+xl create -p $outconfig

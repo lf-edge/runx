@@ -2,7 +2,7 @@
 
 containerid="$1"
 root="$2"
-domid=`xl list | grep "$containerid" | awk '{print$2}'`
+domid="$(xl domid "$containerid")"
 state="$root"/"$containerid/state.json"
 mountpoint=`cat $state | jq '.["config"]["rootfs"]'`
 mountpoint=`sed -e 's/^"//' -e 's/"$//' <<<"$mountpoint"`
@@ -10,17 +10,22 @@ bundledir="`dirname $mountpoint`"
 
 if test "$domid"
 then
-    state="running"
-elif test "$mountpoint"
-then
-    state="created"
-fi
+    xenstate="$(xl list "$domid" 2> /dev/null | tail -n 1 | awk '{print$5}')"
 
-# need to guess the next domid
-if ! test "$domid"
-then
-    domid=`xl list | tail -n 1 | awk '{print$2}'`
-    domid=`expr $domid + 1`
+    if [[ $xenstate =~ p ]]
+    then
+         state="created"
+    elif [[ $xenstate =~ r|b ]]
+    then
+        state="running"
+    else
+        state="stopped"
+    fi
+else
+    domid="$(xl list | tail -n 1 | awk '{print$2}')"
+    domid="$(expr $domid + 1)"
+
+    state="stopped"
 fi
 
 cat << EOF

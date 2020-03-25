@@ -1,10 +1,10 @@
 #!/bin/bash
 
 containerid=$1
-socket_bridge=$2
+dev_containerd=$2
 
 domid=`xl list $containerid | tail -n 1 | awk '{print $2}'`
 dev_xen=$(xenstore-read /local/domain/${domid}/console/tty)
 socat \
-	UNIX-CONNECT:${socket_bridge} \
+	PTY,link=${dev_containerd},rawer \
 	${dev_xen},rawer
