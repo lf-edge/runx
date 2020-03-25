@@ -64,15 +64,16 @@ then
 elif test $cmd = "start"
 then
     $workpath/start $containerid
-elif test $cmd = "delete"
+elif test $cmd = "kill"
 then
-    $workpath/delete $containerid
+    $workpath/delete $containerid "$consolepath/$containerid-pid"
 elif test $cmd = "create"
 then
     # to keep runc happy since it needs to output a PTY
     if test "$guestconsole"
     then
-        daemonize $workpath/recvtty -m null $recvtty_sock
+        mkdir -p $consolepath
+        daemonize $workpath/recvtty -m null  --pid-file  "$consolepath/$containerid-pid"  $recvtty_sock
     fi
 
     /usr/bin/runc $args
@@ -81,7 +82,6 @@ then
 
     if  test "$guestconsole"
     then
-        mkdir -p $consolepath
         daemonize $workpath/serial_start \
           "$containerid" \
           "$consolepath/$containerid-pty"

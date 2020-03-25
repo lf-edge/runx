@@ -3,6 +3,7 @@
 workpath=/usr/share/runX
 
 containerid="$1"
+recvttypidfile="$2"
 state="$root"/"$containerid/state.json"
 mountpoint=`cat $state | jq '.["config"]["rootfs"]'`
 mountpoint=`sed -e 's/^"//' -e 's/"$//' <<<"$mountpoint"`
@@ -12,3 +13,9 @@ cmdline=`cat $configfile | jq  -c -r '.["Config"]["Cmd"] | join("\" \"")'`
 cmdline="\"$cmdline\""
 
 xl destroy $containerid &> /dev/null
+
+if [ -f $recvttypidfile ]
+then
+    kill "$(cat $recvttypidfile)"
+    rm -f "$recvttypidfile"
+fi
