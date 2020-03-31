@@ -10,6 +10,22 @@ mountpoint=`sed -e 's/^"//' -e 's/"$//' <<<"$mountpoint"`
 configfile="`dirname $mountpoint`"/"config.json"
 appname=`cat $configfile | jq '.["Path"]'`
 cmdline=`cat $configfile | jq  -c -r '.["process"]["args"] | join("\" \"")'`
+env=`cat $configfile | jq  -c -r '.["process"]["env"] | join("\" \"")'`
+xlconf=""
+for i in $env
+do
+    i=$(echo $i | tr -d \")
+    if [[ $i = XLCONF=* ]]
+    then
+        xlconf=${i#XLCONF=}
+        if [[ $xlconf = $mountpoint* ]]
+        then
+            # Don't allow the container to use XLCONF
+            xlconf=""
+        fi
+        break
+    fi
+done
 
 # netconf is file,type[,ip]
 netconf=`cat $configfile | jq  -c -r  '.["process"]["env"][] | select(contains("NETCONF"))'`
@@ -62,5 +78,10 @@ fi
 echo "vfb=['vnc=1']" >> $outconfig
 echo "p9=[ 'tag=share_dir,security_model=none,path=$mountpoint' ]" >> $outconfig
 echo "name=\"$containerid\"" >> $outconfig
+if test -f "$xlconf"
+then
+    cat "$xlconf" >> $outconfig
+fi
+
 echo $cmdline > $mountpoint/cmdline
 xl create -p $outconfig
