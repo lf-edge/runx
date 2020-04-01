@@ -12,6 +12,8 @@ appname=`cat $configfile | jq '.["Path"]'`
 cmdline=`cat $configfile | jq  -c -r '.["process"]["args"] | join("\" \"")'`
 env=`cat $configfile | jq  -c -r '.["process"]["env"] | join("\" \"")'`
 xlconf=""
+kernel="$workpath/kernel"
+ramdisk="$workpath/initrd"
 for i in $env
 do
     i=$(echo $i | tr -d \")
@@ -23,7 +25,16 @@ do
             # Don't allow the container to use XLCONF
             xlconf=""
         fi
-        break
+    fi
+    if [[ $i = RUNX_KERNEL=* ]]
+    then
+        kernel=${i#RUNX_KERNEL=}
+        kernel="$mountpoint"/"$kernel"
+    fi
+    if [[ $i = RUNX_RAMDISK=* ]]
+    then
+        ramdisk=${i#RUNX_RAMDISK=}
+        ramdisk="$mountpoint"/"$ramdisk"
     fi
 done
 
@@ -56,8 +67,11 @@ outconfig=$temp/test.0
 
 cd $temp
 rm $outconfig &> /dev/null
-echo "kernel='$workpath/kernel'" >> $outconfig
-echo "ramdisk='$workpath/initrd'" >> $outconfig
+echo "kernel='$kernel'" >> $outconfig
+if test "$ramdisk"
+then
+    echo "ramdisk='$ramdisk'" >> $outconfig
+fi
 echo "memory = 1024" >> $outconfig
 echo "vcpus = 2" >> $outconfig
 echo "serial='pty'" >> $outconfig
