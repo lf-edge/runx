@@ -2,6 +2,7 @@
 
 workpath=/usr/share/runX
 consolepath=/tmp/runx_consoles
+rundir=/run/runX
 
 args=""
 
@@ -9,12 +10,21 @@ recvtty_sock="`mktemp -d`"/"fake.sock"
 guestconsole=""
 cmd=""
 root=""
+bundle=""
 containerid=""
 while (( "$#" ))
 do
     if [[ $1 = "--root" ]]
     then
         root=$2
+        args="$args $1 $2"
+        shift
+        shift
+        continue
+    fi
+    if [[ $1 = "--bundle" ]]
+    then
+        bundle=$2
         args="$args $1 $2"
         shift
         shift
@@ -53,6 +63,15 @@ do
     break
 done
 
+# create a fake "bundle" to keep a consistent "API"
+if test "$bundle"
+then
+    mkdir -p "$rundir"/"$containerid"
+    echo -n "$bundle" > "$rundir"/"$containerid"/bundle
+else
+    bundle=$( cat "$rundir"/"$containerid"/bundle )
+fi
+
 if test $cmd != "create" || test "$guestconsole" = ""
 then
     rm -rf "$(dirname $recvtty_sock)"
@@ -60,7 +79,7 @@ fi
 
 if test $cmd = "state"
 then
-    $workpath/state $containerid $root
+    $workpath/state $containerid "$bundle"
 elif test $cmd = "start"
 then
     $workpath/start $containerid
@@ -78,7 +97,7 @@ then
 
     /usr/bin/runc $args
 
-    $workpath/create $containerid "$root"
+    $workpath/create $containerid "$bundle"
 
     if  test "$guestconsole"
     then
@@ -89,6 +108,12 @@ then
         daemonize $workpath/serial_fd_handler \
           "$guestconsole" \
           "$consolepath/$containerid-pty"
+    fi
+elif test $cmd = "delete"
+then
+    if test "$rundir" -a "$containerid"
+    then
+        rm -rf "$rundir"/"$containerid"
     fi
 else
     /usr/bin/runc $args

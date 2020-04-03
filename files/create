@@ -3,11 +3,9 @@
 workpath=/usr/share/runX
 
 containerid="$1"
-root="$2"
-state="$root"/"$containerid/state.json"
-mountpoint=`cat $state | jq '.["config"]["rootfs"]'`
-mountpoint=`sed -e 's/^"//' -e 's/"$//' <<<"$mountpoint"`
-configfile="`dirname $mountpoint`"/"config.json"
+bundle="$2"
+configfile="$bundle"/config.json
+mountpoint="$bundle"/rootfs
 appname=`cat $configfile | jq '.["Path"]'`
 cmdline=\"`cat $configfile | jq  -c -r '.["process"]["args"] | join("\" \"")'`\"
 env=`cat $configfile | jq  -c -r '.["process"]["env"] | join("\" \"")'`
