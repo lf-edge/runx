@@ -19,7 +19,7 @@ dep: ${GODEPPATHS}
 
 ${GODEPPATHS}:
 	mkdir -p ${GOSRC}
-	GOPATH=${GOPATH} go get $(subst ${GOSRC}/,,$@)
+	GOPATH=${GOPATH} go get -d $(subst ${GOSRC}/,,$@)
 
 ${BIN}: ${GODEPPATHS} $(filter %/$@.go, ${MAIN})
 	GOPATH=${GOPATH} ${ARCH} go build $(filter %/$@.go, ${MAIN})
