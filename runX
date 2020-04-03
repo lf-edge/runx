@@ -85,7 +85,7 @@ then
     $workpath/start $containerid
 elif test $cmd = "kill"
 then
-    $workpath/delete $containerid "$consolepath/$containerid-pid"
+    $workpath/delete $containerid "$bundle" "$consolepath/$containerid-pid"
 elif test $cmd = "create"
 then
     # to keep runc happy since it needs to output a PTY

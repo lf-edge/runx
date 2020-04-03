@@ -3,14 +3,8 @@
 workpath=/usr/share/runX
 
 containerid="$1"
-recvttypidfile="$2"
-state="$root"/"$containerid/state.json"
-mountpoint=`cat $state | jq '.["config"]["rootfs"]'`
-mountpoint=`sed -e 's/^"//' -e 's/"$//' <<<"$mountpoint"`
-configfile="`dirname $mountpoint`"/"config.json"
-appname=`cat $configfile | jq '.["Path"]'`
-cmdline=`cat $configfile | jq  -c -r '.["Config"]["Cmd"] | join("\" \"")'`
-cmdline="\"$cmdline\""
+bundle="$2"
+recvttypidfile="$3"
 
 xl destroy $containerid &> /dev/null
 
@@ -19,3 +13,5 @@ then
     kill "$(cat $recvttypidfile)"
     rm -f "$recvttypidfile"
 fi
+
+rm -f "$bundle"/init.pid

@@ -25,11 +25,18 @@ else
     state="stopped"
 fi
 
+if [ -f "$bundle"/init.pid ]
+then
+    pid=$( cat "$bundle"/init.pid )
+else
+    pid=$domid
+fi
+
 cat << EOF
 {
   "ociVersion": "1.0.1-dev",
   "id": "$containerid",
-  "pid": $domid,
+  "pid": $pid,
   "status": "$state",
   "bundle": "$bundle",
   "rootfs": "$mountpoint",
