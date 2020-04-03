@@ -4,9 +4,6 @@ workpath=/usr/share/runX
 consolepath=/tmp/runx_consoles
 rundir=/run/runX
 
-args=""
-
-recvtty_sock="`mktemp -d`"/"fake.sock"
 guestconsole=""
 cmd=""
 root=""
@@ -17,7 +14,6 @@ do
     if [[ $1 = "--root" ]]
     then
         root=$2
-        args="$args $1 $2"
         shift
         shift
         continue
@@ -25,7 +21,6 @@ do
     if [[ $1 = "--bundle" ]]
     then
         bundle=$2
-        args="$args $1 $2"
         shift
         shift
         continue
@@ -33,32 +28,27 @@ do
     if [[ $1 = "--console-socket" ]]
     then
         guestconsole="$2"
-        args="$args $1 $recvtty_sock"
         shift
         shift
         continue
     fi
     if [[ $1 = "--no-pivot" ]]
     then
-        args="$args $1"
         shift
         continue
     fi
     if [[ $1 = "--"* ]]
     then
-        args="$args $1 $2"
         shift
         shift
         continue
     fi
     if test -z "$cmd"
     then
-        args="$args $1"
         cmd=$1
         shift
         continue
     fi
-    args="$args $1"
     containerid=$1
     break
 done
@@ -72,11 +62,6 @@ else
     bundle=$( cat "$rundir"/"$containerid"/bundle )
 fi
 
-if test $cmd != "create" || test "$guestconsole" = ""
-then
-    rm -rf "$(dirname $recvtty_sock)"
-fi
-
 if test $cmd = "state"
 then
     $workpath/state $containerid "$bundle"
@@ -85,22 +70,14 @@ then
     $workpath/start $containerid
 elif test $cmd = "kill"
 then
-    $workpath/delete $containerid "$bundle" "$consolepath/$containerid-pid"
+    $workpath/delete $containerid "$bundle"
 elif test $cmd = "create"
 then
-    # to keep runc happy since it needs to output a PTY
-    if test "$guestconsole"
-    then
-        mkdir -p $consolepath
-        daemonize $workpath/recvtty -m null  --pid-file  "$consolepath/$containerid-pid"  $recvtty_sock
-    fi
-
-    /usr/bin/runc $args
-
     $workpath/create $containerid "$bundle"
 
     if  test "$guestconsole"
     then
+        mkdir -p $consolepath
         daemonize $workpath/serial_start \
           "$containerid" \
           "$consolepath/$containerid-pty"
@@ -116,5 +93,5 @@ then
         rm -rf "$rundir"/"$containerid"
     fi
 else
-    /usr/bin/runc $args
+    :
 fi

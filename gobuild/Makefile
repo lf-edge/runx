@@ -2,7 +2,7 @@ GOPATH=$(shell pwd)/go
 GOSRC=${GOPATH}/src
 GODEPS=github.com/opencontainers/runc
 GODEPPATHS=$(addprefix ${GOSRC}/,${GODEPS})
-MAIN=src/serial_fd_handler.go go/src/github.com/opencontainers/runc/contrib/cmd/recvtty/recvtty.go
+MAIN=src/serial_fd_handler.go
 BIN=$(basename $(notdir ${MAIN}))
 
 ifdef GOARCH

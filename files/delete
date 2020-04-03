@@ -4,14 +4,7 @@ workpath=/usr/share/runX
 
 containerid="$1"
 bundle="$2"
-recvttypidfile="$3"
 
 xl destroy $containerid &> /dev/null
-
-if [ -f $recvttypidfile ]
-then
-    kill "$(cat $recvttypidfile)"
-    rm -f "$recvttypidfile"
-fi
 
 rm -f "$bundle"/init.pid

@@ -69,7 +69,6 @@ else
 fi
 cd -
 cp gobuild/serial_fd_handler target/usr/share/runX/
-cp gobuild/recvtty target/usr/share/runX/
 
 mkdir -p target/usr/sbin
 cp runX target/usr/sbin
