@@ -1,7 +1,6 @@
 #!/bin/bash
 
 workpath=/usr/share/runX
-consolepath=/tmp/runx_consoles
 rundir=/run/runX
 
 guestconsole=""
@@ -77,14 +76,13 @@ then
 
     if  test "$guestconsole"
     then
-        mkdir -p $consolepath
         daemonize $workpath/serial_start \
           "$containerid" \
-          "$consolepath/$containerid-pty"
+          "$rundir"/"$containerid"/console_pty
         sleep .1
         daemonize $workpath/serial_fd_handler \
           "$guestconsole" \
-          "$consolepath/$containerid-pty"
+          "$rundir"/"$containerid"/console_pty
     fi
 elif test $cmd = "delete"
 then
