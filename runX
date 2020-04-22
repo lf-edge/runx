@@ -81,6 +81,19 @@ fi
 if test \( "$bundle" \) -a \( ! -f "$crundir"/bundle \)
 then
     echo -n "$bundle" > "$crundir"/bundle
+
+    if  test -f "$bundle"/config.json
+    then
+        rootfs="$( jq -r -c  '.["root"]["path"]' "$bundle"/config.json )"
+        if [[ "$rootfs" != /* ]]
+        then
+            rootfs="$bundle"/"$rootfs"
+        fi
+        echo -n "$rootfs" > "$crundir"/rootfs
+    else
+        echo "can't determine rootfs, erring out"
+        exit 1
+    fi
 fi
 
 if test \( "$pidfile" \) -a \( ! -f "$crundir"/pidfile \)

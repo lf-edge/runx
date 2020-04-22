@@ -5,7 +5,7 @@ crundir="$2"
 bundle=$( cat "$crundir"/bundle )
 pidfile=$( cat "$crundir"/pidfile )
 domid="$(xl domid "$containerid")"
-mountpoint="$bundle"/rootfs
+mountpoint=$( cat "$crundir"/rootfs )
 
 if test "$domid"
 then
