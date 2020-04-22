@@ -3,7 +3,8 @@
 workpath=/usr/share/runX
 
 containerid="$1"
-bundle="$2"
+crundir="$2"
+bundle=$( cat "$crundir"/bundle )
 configfile="$bundle"/config.json
 mountpoint="$bundle"/rootfs
 appname=`cat $configfile | jq '.["Path"]'`

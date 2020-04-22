@@ -52,18 +52,32 @@ do
     break
 done
 
-# create a fake "bundle" to keep a consistent "API"
-if test "$bundle"
+if ! test "$containerid"
 then
-    mkdir -p "$rundir"/"$containerid"
-    echo -n "$bundle" > "$rundir"/"$containerid"/bundle
-else
-    bundle=$( cat "$rundir"/"$containerid"/bundle )
+    echo "no containerid given, exiting"
+    exit 1
+fi
+
+crundir="$rundir"/"$containerid"
+
+if test "$cmd" = "create"
+then
+    rm -rf "$crundir"
+fi
+
+if test ! -d "$crundir"
+then
+    mkdir -p "$crundir"
+fi
+
+if test \( "$bundle" \) -a \( ! -f "$crundir"/bundle \)
+then
+    echo -n "$bundle" > "$crundir"/bundle
 fi
 
 if test $cmd = "state"
 then
-    $workpath/state $containerid "$bundle"
+    $workpath/state $containerid "$crundir"
 elif test $cmd = "start"
 then
     $workpath/start $containerid
@@ -72,24 +86,21 @@ then
     $workpath/delete $containerid
 elif test $cmd = "create"
 then
-    $workpath/create $containerid "$bundle"
+    $workpath/create $containerid "$crundir"
 
-    if  test "$guestconsole"
+    if test "$guestconsole"
     then
         daemonize $workpath/serial_start \
           "$containerid" \
-          "$rundir"/"$containerid"/console_pty
+          "$crundir"/console_pty
         sleep .1
         daemonize $workpath/serial_fd_handler \
           "$guestconsole" \
-          "$rundir"/"$containerid"/console_pty
+          "$crundir"/console_pty
     fi
 elif test $cmd = "delete"
 then
-    if test "$rundir" -a "$containerid"
-    then
-        rm -rf "$rundir"/"$containerid"
-    fi
+    rm -rf "$crundir"
 else
     :
 fi

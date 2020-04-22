@@ -1,7 +1,8 @@
 #!/bin/bash
 
 containerid="$1"
-bundle="$2"
+crundir="$2"
+bundle=$( cat "$crundir"/bundle )
 domid="$(xl domid "$containerid")"
 mountpoint="$bundle"/rootfs
 
