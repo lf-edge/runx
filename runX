@@ -123,6 +123,8 @@ then
         daemonize $workpath/serial_fd_handler \
           "$guestconsole" \
           "$crundir"/console_pty
+    else
+         echo "connect to container console with 'xl console $containerid'"
     fi
 elif test $cmd = "delete"
 then

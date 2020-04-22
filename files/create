@@ -96,7 +96,7 @@ then
 fi
 
 echo $cmdline > $mountpoint/cmdline
-xl create -p $outconfig
+xl create -p $outconfig > /dev/null 2>&1
 
 pid=$( ps | grep -v grep | grep "xl create -p $outconfig" | awk '{print $1}' )
 echo -n "$pid" > "$pidfile"
