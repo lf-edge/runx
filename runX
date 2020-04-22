@@ -7,6 +7,7 @@ guestconsole=""
 cmd=""
 root=""
 bundle=""
+pidfile=""
 containerid=""
 while (( "$#" ))
 do
@@ -20,6 +21,13 @@ do
     if [[ $1 = "--bundle" ]]
     then
         bundle=$2
+        shift
+        shift
+        continue
+    fi
+    if [[ $1 = "--pid-file" ]]
+    then
+        pidfile=$2
         shift
         shift
         continue
@@ -73,6 +81,11 @@ fi
 if test \( "$bundle" \) -a \( ! -f "$crundir"/bundle \)
 then
     echo -n "$bundle" > "$crundir"/bundle
+fi
+
+if test \( "$pidfile" \) -a \( ! -f "$crundir"/pidfile \)
+then
+    echo -n "$pidfile" > "$crundir"/pidfile
 fi
 
 if test $cmd = "state"

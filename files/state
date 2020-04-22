@@ -3,6 +3,7 @@
 containerid="$1"
 crundir="$2"
 bundle=$( cat "$crundir"/bundle )
+pidfile=$( cat "$crundir"/pidfile )
 domid="$(xl domid "$containerid")"
 mountpoint="$bundle"/rootfs
 
@@ -26,9 +27,9 @@ else
     state="stopped"
 fi
 
-if [ -f "$bundle"/init.pid ]
+if test -f "$pidfile"
 then
-    pid=$( cat "$bundle"/init.pid )
+    pid=$( cat "$pidfile" )
 else
     pid=$domid
 fi

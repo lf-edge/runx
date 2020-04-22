@@ -5,6 +5,7 @@ workpath=/usr/share/runX
 containerid="$1"
 crundir="$2"
 bundle=$( cat "$crundir"/bundle )
+pidfile=$( cat "$crundir"/pidfile )
 configfile="$bundle"/config.json
 mountpoint="$bundle"/rootfs
 appname=`cat $configfile | jq '.["Path"]'`
@@ -100,5 +101,4 @@ echo $cmdline > $mountpoint/cmdline
 xl create -p $outconfig
 
 pid=$( ps | grep -v grep | grep "xl create -p $outconfig" | awk '{print $1}' )
-pidfile="$bundle"/init.pid
 echo -n "$pid" > "$pidfile"
