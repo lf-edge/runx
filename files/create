@@ -62,11 +62,9 @@ else
     pvcalls=1
 fi
 
-temp=`mktemp -d`
-outconfig=$temp/test.0
-
-cd $temp
+outconfig=$crundir/xen_vm.cfg
 rm $outconfig &> /dev/null
+
 echo "kernel='$kernel'" >> $outconfig
 if test "$ramdisk"
 then
