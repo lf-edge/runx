@@ -3,8 +3,5 @@
 workpath=/usr/share/runX
 
 containerid="$1"
-bundle="$2"
 
 xl destroy $containerid &> /dev/null
-
-rm -f "$bundle"/init.pid

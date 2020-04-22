@@ -69,7 +69,7 @@ then
     $workpath/start $containerid
 elif test $cmd = "kill"
 then
-    $workpath/delete $containerid "$bundle"
+    $workpath/delete $containerid
 elif test $cmd = "create"
 then
     $workpath/create $containerid "$bundle"
