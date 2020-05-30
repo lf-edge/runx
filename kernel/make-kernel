@@ -16,10 +16,10 @@ kernel_outpath=$kernel_stuffdir/out
 kernel_builddir=$kernel_stuffdir/build
 kernel_out=$kernel_outpath/kernel
 
-kernel_version=4.15
+kernel_version=5.4
 kernel_name=linux-$kernel_version
 kernel_tarball="$kernel_name".tar.xz
-kernel_url=https://www.kernel.org/pub/linux/kernel/v4.x/"$kernel_tarball"
+kernel_url=https://www.kernel.org/pub/linux/kernel/v5.x/"$kernel_tarball"
 kernel_src_config="$kernel_stuffdir"/cutdown-config."$ARCH"
 kernel_patchesdir="$kernel_stuffdir"/patches
 kernel_image="$kernel_builddir"/"$kernel_name"/arch/"$ARCH"/boot/"$image"

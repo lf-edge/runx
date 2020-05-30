@@ -1,35 +1,21 @@
-From b2d2494d918609daa252ed8cfa486fa65c8ece1b Mon Sep 17 00:00:00 2001
-From: Stefano Stabellini <sstabellini@kernel.org>
-Date: Mon, 26 Feb 2018 17:24:57 -0800
-Subject: [PATCH 1/4] patch pvcalls_enable
-
----
- drivers/xen/Makefile  |   1 +
- drivers/xen/pvcalls.c | 123 ++++++++++++++++++++++++++++++++++++++++++++++++++
- include/xen/pvcalls.h |  13 ++++++
- net/ipv4/af_inet.c    |   7 ++-
- 4 files changed, 143 insertions(+), 1 deletion(-)
- create mode 100644 drivers/xen/pvcalls.c
- create mode 100644 include/xen/pvcalls.h
-
 diff --git a/drivers/xen/Makefile b/drivers/xen/Makefile
-index 451e833..87352a8 100644
+index 0c4efa6fe450..a8f17656d511 100644
 --- a/drivers/xen/Makefile
 +++ b/drivers/xen/Makefile
-@@ -38,6 +38,7 @@ obj-$(CONFIG_XEN_SCSI_BACKEND)		+= xen-scsiback.o
+@@ -36,6 +36,7 @@ obj-$(CONFIG_XEN_SCSI_BACKEND)		+= xen-scsiback.o
  obj-$(CONFIG_XEN_AUTO_XLATE)		+= xlate_mmu.o
  obj-$(CONFIG_XEN_PVCALLS_BACKEND)	+= pvcalls-back.o
  obj-$(CONFIG_XEN_PVCALLS_FRONTEND)	+= pvcalls-front.o
 +obj-$(CONFIG_XEN_PVCALLS_FRONTEND)	+= pvcalls.o
  xen-evtchn-y				:= evtchn.o
  xen-gntdev-y				:= gntdev.o
- xen-gntalloc-y				:= gntalloc.o
+ xen-gntdev-$(CONFIG_XEN_GNTDEV_DMABUF)	+= gntdev-dmabuf.o
 diff --git a/drivers/xen/pvcalls.c b/drivers/xen/pvcalls.c
 new file mode 100644
-index 0000000..b5cb160c
+index 000000000000..131a71c532aa
 --- /dev/null
 +++ b/drivers/xen/pvcalls.c
-@@ -0,0 +1,123 @@
+@@ -0,0 +1,122 @@
 +#include <linux/types.h>
 +#include <linux/bitops.h>
 +#include <linux/cred.h>
@@ -81,13 +67,12 @@ index 0000000..b5cb160c
 +}
 +
 +static int pvcalls_getname(struct socket *sock,
-+			 struct sockaddr *uaddr, int *uaddr_len, int peer)
++			 struct sockaddr *uaddr, int peer)
 +{
 +	DECLARE_SOCKADDR(struct sockaddr_in *, sin, uaddr);
 +
 +	sin->sin_family = AF_INET;
 +	memset(sin->sin_zero, 0, sizeof(sin->sin_zero));
-+	*uaddr_len = sizeof(*sin);
 +	return 0;
 +}
 +
@@ -155,7 +140,7 @@ index 0000000..b5cb160c
 +early_param("pvcalls", xen_parse_pvcalls);
 diff --git a/include/xen/pvcalls.h b/include/xen/pvcalls.h
 new file mode 100644
-index 0000000..7a61475
+index 000000000000..7a6147528ebd
 --- /dev/null
 +++ b/include/xen/pvcalls.h
 @@ -0,0 +1,13 @@
@@ -173,19 +158,18 @@ index 0000000..7a61475
 +
 +#endif
 diff --git a/net/ipv4/af_inet.c b/net/ipv4/af_inet.c
-index f00499a..6dc38c0 100644
+index 70f92aaca411..7bdc2dbdebc7 100644
 --- a/net/ipv4/af_inet.c
 +++ b/net/ipv4/af_inet.c
-@@ -120,7 +120,7 @@
- #include <linux/mroute.h>
- #endif
+@@ -118,6 +118,7 @@
  #include <net/l3mdev.h>
--
+ 
+ #include <trace/events/sock.h>
 +#include <xen/pvcalls.h>
  
  /* The inetsw table contains everything that inet_create needs to
   * build a new socket.
-@@ -1869,6 +1869,11 @@ static int __init inet_init(void)
+@@ -1959,6 +1960,11 @@ static int __init inet_init(void)
  	for (r = &inetsw[0]; r < &inetsw[SOCK_MAX]; ++r)
  		INIT_LIST_HEAD(r);
  
@@ -197,6 +181,3 @@ index f00499a..6dc38c0 100644
  	for (q = inetsw_array; q < &inetsw_array[INETSW_ARRAY_LEN]; ++q)
  		inet_register_protosw(q);
  
--- 
-1.9.1
-
