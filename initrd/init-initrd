@@ -2,17 +2,8 @@
 
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
-if ! test -f /dev/xvda
-then
-    mknod /dev/xvda b 202 0
-fi
-mknod -m 622 /dev/console c 5 1
-mknod -m 666 /dev/null c 1 3
-mknod -m 666 /dev/zero c 1 5
-mknod -m 666 /dev/ptmx c 5 2
-mknod -m 666 /dev/tty c 5 0
-mknod -m 444 /dev/random c 1 8
-mknod -m 444 /dev/urandom c 1 9
+mount -t devtmpfs devtmpfs /dev
+
 touch /etc/fstab
 
 root=`cat /proc/cmdline | grep -o '\broot=[^ ]*' | cut -d = -f 2`
