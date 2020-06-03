@@ -12,10 +12,10 @@ index 0c4efa6fe450..a8f17656d511 100644
  xen-gntdev-$(CONFIG_XEN_GNTDEV_DMABUF)	+= gntdev-dmabuf.o
 diff --git a/drivers/xen/pvcalls.c b/drivers/xen/pvcalls.c
 new file mode 100644
-index 000000000000..131a71c532aa
+index 000000000000..9c758addd9c8
 --- /dev/null
 +++ b/drivers/xen/pvcalls.c
-@@ -0,0 +1,122 @@
+@@ -0,0 +1,129 @@
 +#include <linux/types.h>
 +#include <linux/bitops.h>
 +#include <linux/cred.h>
@@ -73,7 +73,7 @@ index 000000000000..131a71c532aa
 +
 +	sin->sin_family = AF_INET;
 +	memset(sin->sin_zero, 0, sizeof(sin->sin_zero));
-+	return 0;
++	return sizeof(*sin);
 +}
 +
 +static unsigned int pvcalls_poll(struct file *file, struct socket *sock,
@@ -110,6 +110,13 @@ index 000000000000..131a71c532aa
 +	return -ENOTSUPP;
 +}
 +
++static int pvcalls_setsockopt(struct socket *sock, int level, int optname,
++		    char __user *optval, unsigned int optlen)
++{
++	printk(KERN_DEBUG "ignoring setsockopt:0x%x\n", optname);
++	return 0;
++}
++
 +const struct proto_ops pvcalls_stream_ops = {
 +	.family = PF_INET,
 +	.owner = THIS_MODULE,
@@ -123,7 +130,7 @@ index 000000000000..131a71c532aa
 +	.ioctl = sock_no_ioctl,
 +	.listen = pvcalls_listen,
 +	.shutdown = pvcalls_shutdown,
-+	.setsockopt = sock_no_setsockopt,
++	.setsockopt = pvcalls_setsockopt,
 +	.getsockopt = sock_no_getsockopt,
 +	.sendmsg = pvcalls_stream_sendmsg,
 +	.recvmsg = pvcalls_stream_recvmsg,
