@@ -1,10 +1,11 @@
 #!/bin/bash
 
-outpath=`pwd`/initrd/out
+base="`pwd`/initrd"
+outpath="$base"/out
 tmpdir=`mktemp -d`
 tmpfile=`mktemp`
 initrd=$outpath/initrd
-init=`pwd`/initrd/init-initrd
+init="$base"/init-initrd
 rm -rf $tmpdir
 
 if test -z "$busybox"
@@ -25,8 +26,17 @@ mkdir -p $tmpdir/mnt
 cp "$busybox" $tmpdir/bin/busybox
 $tmpdir/bin/busybox --install $tmpdir/bin
 
-cp $init $tmpdir/init
-chmod +x $tmpdir/init
+mkdir -p $tmpdir/etc/init.d
+cp $init $tmpdir/etc/init.d/rcS
+chmod +x $tmpdir/etc/init.d/rcS
+
+cp "$base"/inittab $tmpdir/etc/inittab
+cp "$base"/passwd $tmpdir/etc/passwd
+
+cp "$base"/autologin $tmpdir/bin
+chmod +x $tmpdir/bin/autologin
+cp "$base"/enter $tmpdir/bin
+chmod +x $tmpdir/bin/enter
 
 cd $tmpdir
 find . | cpio --create --format='newc' > $tmpfile

@@ -1,0 +1,2 @@
+::sysinit:/etc/init.d/rcS
+hvc0::respawn:/bin/getty -n -l /bin/autologin 115200 hvc0

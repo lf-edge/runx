@@ -1,0 +1,5 @@
+#!/bin/sh
+
+cmd=`cat /mnt/cmdline`
+echo Executing $cmd
+eval chroot /mnt $cmd

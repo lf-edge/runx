@@ -79,13 +79,13 @@ then
     echo "vif=['bridge="$bridge"']" >> $outconfig
     if test "$netaddr"
     then
-        echo extra=\'console=hvc0 root=9p ip=$netaddr gw=$gw route=$route\' >> $outconfig
+        echo extra=\'console=hvc0 root=9p rdinit=/bin/init ip=$netaddr gw=$gw route=$route\' >> $outconfig
     else
-        echo extra=\'console=hvc0 root=9p ip=dhcp\' >> $outconfig
+        echo extra=\'console=hvc0 root=9p rdinit=/bin/init ip=dhcp\' >> $outconfig
     fi
 else
     echo "pvcalls=['']" >> $outconfig
-    echo extra=\'console=hvc0 root=9p pvcalls=1\' >> $outconfig
+    echo extra=\'console=hvc0 root=9p rdinit=/bin/init pvcalls=1\' >> $outconfig
 fi
 echo "vfb=['vnc=1']" >> $outconfig
 echo "p9=[ 'tag=share_dir,security_model=none,path=$mountpoint' ]" >> $outconfig

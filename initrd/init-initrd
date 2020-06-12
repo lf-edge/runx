@@ -53,6 +53,3 @@ then
 		echo "nameserver 2001:4860:4860::8888" > /mnt/etc/resolv.conf
 	fi
 fi
-cmd=`cat /mnt/cmdline`
-echo "Executing $cmd"
-eval chroot /mnt $cmd
