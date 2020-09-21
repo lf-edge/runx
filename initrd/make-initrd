@@ -48,7 +48,10 @@ mkdir -p $tmpdir/lib
 mkdir -p $tmpdir/var
 mkdir -p $tmpdir/mnt
 cp "$busybox" $tmpdir/bin/busybox
-$tmpdir/bin/busybox --install $tmpdir/bin
+for i in `cat "$base"/applet-list`
+do
+    ln -s /bin/busybox $tmpdir/bin/$i
+done
 
 mkdir -p $tmpdir/etc/init.d
 cp $init $tmpdir/etc/init.d/rcS
