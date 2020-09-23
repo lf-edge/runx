@@ -119,7 +119,13 @@ then
         daemonize $workpath/serial_start \
           "$containerid" \
           "$crundir"/console_pty
-        sleep .1
+        for n in 10 9 8 7 6 5 4 3 2 1; do
+            if [ ! -L "$crundir"/console_pty ]; then
+              sleep .1
+            else
+              break
+            fi;
+        done
         daemonize $workpath/serial_fd_handler \
           "$guestconsole" \
           "$crundir"/console_pty
