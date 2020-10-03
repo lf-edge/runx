@@ -1,9 +1,6 @@
 Please make sure you have the following installed on your system, they
 are required by runX:
 
-bash
-busybox-static, the binary to use can be specified via "busybox" env var
-
 run time:
 xen tools (xl) >= 4.9
 qemu with xen and virtfs support > 2.9
@@ -12,7 +9,8 @@ socat
 daemonize
 
 build time:
+bash
 gcc, if cross-compiling CROSS_COMPILE needs to be set
-make
+cpio
+make and other tools needed to build the kernel (flex, bison, bc)
 go, GOROOT needs to be set
-qemu user static (e.g. qemu-aarch64-static) if the target architecture is different from the build architecture
