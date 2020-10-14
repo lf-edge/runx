@@ -16,7 +16,7 @@ then
     busybox_name=busybox-$busybox_version
     busybox_tarball="$busybox_name".tar.bz2
     busybox_url="https://busybox.net/downloads/""$busybox_tarball"
-    busybox_src_config="$base"/config."$ARCH"
+    busybox_src_config="$base"/busybox.config
     busybox_image="$builddir"/"$busybox_name"/busybox
     
     rm -rf $outpath
