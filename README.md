@@ -54,11 +54,27 @@ Architecture
 ContainerD invocation
 ---------------------
 
+- containerd 1.2.x
+
 Use the following example config stanza in your
 /etc/containerd/config.toml config file to choose RunX as OCI-runtime:
 
     [plugins.linux]
          runtime="/usr/sbin/runX"
+
+- containerd 1.3.x
+
+There does not seem to be a way to configure containerd so that it runs
+runX instead of runc. You might have to:
+
+    mv /usr/sbin/runX /usr/bin/runc
+
+- containerd 1.4.x
+
+Pass "--runc-binary" to ctr run:
+
+    ctr run --runc-binary=/usr/sbin/runX
+
 
 
 Networking Configuration
