@@ -107,6 +107,12 @@ then
 elif test $cmd = "start"
 then
     $workpath/start $containerid
+elif test $cmd = "pause"
+then
+    $workpath/pause $containerid pause
+elif test $cmd = "resume"
+then
+    $workpath/pause $containerid resume
 elif test $cmd = "kill"
 then
     $workpath/delete $containerid

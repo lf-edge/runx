@@ -13,7 +13,13 @@ then
 
     if [[ $xenstate =~ p ]]
     then
-         state="created"
+        uptime="$(xl list "$domid" 2> /dev/null | tail -n 1 | awk '{print$6}')"
+        if [ $uptime = "0.0" ]
+        then
+            state="created"
+        else
+            state="paused"
+        fi
     elif [[ $xenstate =~ r|b ]]
     then
         state="running"

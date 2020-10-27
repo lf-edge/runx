@@ -1,0 +1,19 @@
+#!/bin/bash
+
+containerid="$1"
+cmd="$2"
+
+case "$cmd" in
+pause)
+    xl pause "$containerid"
+    ;;
+resume)
+    xl unpause "$containerid"
+    ;;
+*)
+    echo "pause/resume command not found"
+    exit 1
+    ;;
+esac
+
+exit $?
