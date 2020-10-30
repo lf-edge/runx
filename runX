@@ -132,7 +132,7 @@ then
               break
             fi;
         done
-        daemonize $workpath/serial_fd_handler \
+        daemonize $workpath/sendfd \
           "$guestconsole" \
           "$crundir"/console_pty
     else

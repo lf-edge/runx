@@ -27,7 +27,7 @@ if [ "x${1:-}" != "x" ] && [ "clean" == "$1" ]; then
     rm -rf kernel/build
     rm -rf initrd/out
     rm -rf target
-    cd gobuild
+    cd sendfd
     make clean
     cd -
 
@@ -58,15 +58,10 @@ for i in $execs; do
     cp files/$i target/usr/share/runX
 done
 
-cd gobuild
-if [[ $ARCH = "x86" ]]
-then
-    make GOARCH=amd64
-else
-    make GOARCH=$ARCH
-fi
-cd -
-cp gobuild/serial_fd_handler target/usr/share/runX/
+cd sendfd
+make
+cd ..
+cp sendfd/sendfd target/usr/share/runX/
 
 mkdir -p target/usr/sbin
 cp runX target/usr/sbin

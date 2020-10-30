@@ -13,4 +13,3 @@ bash
 gcc, if cross-compiling CROSS_COMPILE needs to be set
 cpio
 make and other tools needed to build the kernel (flex, bison, bc)
-go, GOROOT needs to be set
