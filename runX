@@ -116,8 +116,10 @@ then
 elif test $cmd = "kill"
 then
     $workpath/delete $containerid
+    $workpath/mount $containerid "$crundir" unmount
 elif test $cmd = "create"
 then
+    $workpath/mount $containerid "$crundir" mount
     $workpath/create $containerid "$crundir"
 
     if test "$guestconsole"

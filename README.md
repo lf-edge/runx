@@ -114,3 +114,35 @@ An example cni file is:
     }
 }
 ```
+
+
+
+Container Filesystem Binds
+--------------------------
+
+Currently runX only supports filesystem binds.  The defaults are bind and RW.
+You can also pass any -o arguement mount uses.  Now you use them in containerd
+like:
+
+```
+ctr ...  --mount type=bind,src=/tmp,dst=/host,options=bind:rw ...
+```
+
+which is the same as:
+
+```
+ctr ...  --mount type=bind,src=/tmp,dst=/host ...
+```
+
+Or to have it RO and disable execution:
+
+```
+ctr ...  --mount type=bind,src=/tmp,dst=/host,options=ro:noexec ...
+```
+
+Likewise to just use rbind rather than bind:
+
+
+```
+ctr ...  --mount type=bind,src=/tmp,dst=/host,options=rbind ...
+```
