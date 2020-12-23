@@ -1,6 +1,16 @@
 RunX
 ====
 
+Contributions
+-------------
+
+For discussions and contributions please send emails to
+eve-runx@lists.lfedge.org. You can subscribe here:
+https://lists.lfedge.org/g/eve-runx. Make sure to add the Signed-off-by
+tag to your patches as per the Developer Certificate of Origin, see
+https://elinux.org/Developer_Certificate_Of_Origin.
+
+
 Goals and Scope
 ---------------
 RunX is an OCI Runtime Spec compliant containers runtime that runs
