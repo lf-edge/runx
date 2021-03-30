@@ -42,10 +42,10 @@ fi
 if [[ $ARCH = "x86_64" ]]
 then
     export ARCH="x86"
-elif [[ $ARCH = "aarch64" ]]
+elif [[ $ARCH = "aarch64" || $ARCH = "arm64" ]]
 then
     export ARCH="arm64"
-elif [[ $ARCH = "arm*" ]]
+elif [[ $ARCH = "arm" || $ARCH = "arm32" ]]
 then
     export ARCH="arm"
 else
