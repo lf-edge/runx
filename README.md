@@ -61,6 +61,21 @@ Architecture
     +-----------------------------+
 
 
+Build
+-----
+
+Steps to a full build:
+
+    export ARCH=aarch64                          # other options: x86_64 and arm
+    export CROSS_COMPILE=/path/to/cross-compiler # only if cross-compiling
+    ./build
+
+Optionally, it is possible to select a specific static busybox binary to
+use instead of building one from scratch with the busybox environmental variable:
+
+    export busybox=/usr/bin/busybox-static-aarch64
+
+
 ContainerD invocation
 ---------------------
 
