@@ -16,7 +16,7 @@ kernel_outpath=$kernel_stuffdir/out
 kernel_builddir=$kernel_stuffdir/build
 kernel_out=$kernel_outpath/kernel
 
-kernel_version=5.4
+kernel_version=5.4.109
 kernel_name=linux-$kernel_version
 kernel_tarball="$kernel_name".tar.xz
 kernel_url=https://www.kernel.org/pub/linux/kernel/v5.x/"$kernel_tarball"
