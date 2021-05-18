@@ -37,7 +37,7 @@ fi
 # Support cross-compiling via ARCH variable
 if [[ -z "$ARCH" ]]
 then
-    ARCH=`uname -p`
+    ARCH=`uname -m`
 fi
 if [[ $ARCH = "x86_64" ]]
 then
