@@ -70,17 +70,6 @@ echo "rc_verbose=yes" >> etc/rc.conf
 find . |cpio -H newc -o|gzip > ../xen-rootfs.cpio.gz
 cd ../..
 
-# alpine's qemu uboot doesn't work, use debian's
-mkdir temp
-cd temp
-curl -fsSLO http://http.us.debian.org/debian/pool/main/u/u-boot/u-boot-qemu_2021.01+dfsg-4_all.deb
-mv u-boot-qemu_2021.01+dfsg-4_all.deb u-boot-qemu_2021.01+dfsg-4_all.ar
-ar xf u-boot-qemu_2021.01+dfsg-4_all.ar
-tar xfJ data.tar.xz
-cp usr/lib/u-boot/qemu_arm64/u-boot.bin ../binaries/
-cd ../
-rm -rf temp
-
 # XXX QEMU looks for "efi-virtio.rom" even if it is unneeded
 curl -fsSLO https://github.com/qemu/qemu/raw/v5.2.0/pc-bios/efi-virtio.rom
 ./binaries/qemu-system-aarch64 \

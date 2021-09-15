@@ -92,5 +92,5 @@ you have access to do so and have your Docker logged into the registry.
 To login you must run `docker login registry.gitlab.com`. For more
 information see the [registry help].
 
-[registry]: https://gitlab.com/runx/runx/container_registry
+[registry]: https://gitlab.com/lf-edge/runx/container_registry
 [registry help]: https://gitlab.com/help/user/project/container_registry

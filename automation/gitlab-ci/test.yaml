@@ -36,6 +36,7 @@ qemu-alpine-arm64-test:
     - alpine-3.12-arm64-rootfs-export
     - kernel-5.10.30-arm64-export
     - qemu-system-aarch64-5.2.0-arm64-export
+    - u-boot-2021.07-arm64-export
     - xen-4.14-arm64-export
   artifacts:
     paths:

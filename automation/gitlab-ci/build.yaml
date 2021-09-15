@@ -79,6 +79,17 @@ qemu-system-aarch64-5.2.0-arm64-export:
   tags:
     - arm64
 
+u-boot-2021.07-arm64-export:
+  stage: build
+  image: registry.gitlab.com/lf-edge/runx/tests-artifacts/u-boot:2021.07-arm64v8
+  script:
+    - mkdir binaries && cp /u-boot.bin binaries/u-boot.bin
+  artifacts:
+    paths:
+      - binaries/u-boot.bin
+  tags:
+    - arm64
+
 xen-4.14-arm64-export:
   stage: build
   image: registry.gitlab.com/lf-edge/runx/tests-artifacts/xen:4.14-arm64v8
