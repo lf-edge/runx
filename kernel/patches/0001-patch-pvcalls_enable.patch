@@ -1,8 +1,23 @@
+From b3ce057869beb661b8102dbbfbf895fe35a1f6c4 Mon Sep 17 00:00:00 2001
+From: Stefano Stabellini <stefano.stabellini@xilinx.com>
+Date: Fri, 22 Oct 2021 17:51:29 -0700
+Subject: [PATCH] Enable pvcalls
+
+Signed-off-by: Stefano Stabellini <stefano.stabellini@xilinx.com>
+---
+ drivers/xen/Makefile  |   1 +
+ drivers/xen/pvcalls.c | 136 ++++++++++++++++++++++++++++++++++++++++++
+ include/xen/pvcalls.h |  13 ++++
+ net/ipv4/af_inet.c    |   6 ++
+ 4 files changed, 156 insertions(+)
+ create mode 100644 drivers/xen/pvcalls.c
+ create mode 100644 include/xen/pvcalls.h
+
 diff --git a/drivers/xen/Makefile b/drivers/xen/Makefile
-index 0c4efa6fe450..a8f17656d511 100644
+index babdca808861..7192a77a6cbb 100644
 --- a/drivers/xen/Makefile
 +++ b/drivers/xen/Makefile
-@@ -36,6 +36,7 @@ obj-$(CONFIG_XEN_SCSI_BACKEND)		+= xen-scsiback.o
+@@ -35,6 +35,7 @@ obj-$(CONFIG_XEN_SCSI_BACKEND)		+= xen-scsiback.o
  obj-$(CONFIG_XEN_AUTO_XLATE)		+= xlate_mmu.o
  obj-$(CONFIG_XEN_PVCALLS_BACKEND)	+= pvcalls-back.o
  obj-$(CONFIG_XEN_PVCALLS_FRONTEND)	+= pvcalls-front.o
@@ -12,10 +27,10 @@ index 0c4efa6fe450..a8f17656d511 100644
  xen-gntdev-$(CONFIG_XEN_GNTDEV_DMABUF)	+= gntdev-dmabuf.o
 diff --git a/drivers/xen/pvcalls.c b/drivers/xen/pvcalls.c
 new file mode 100644
-index 000000000000..9c758addd9c8
+index 000000000000..d9acabb78c2c
 --- /dev/null
 +++ b/drivers/xen/pvcalls.c
-@@ -0,0 +1,129 @@
+@@ -0,0 +1,136 @@
 +#include <linux/types.h>
 +#include <linux/bitops.h>
 +#include <linux/cred.h>
@@ -111,9 +126,16 @@ index 000000000000..9c758addd9c8
 +}
 +
 +static int pvcalls_setsockopt(struct socket *sock, int level, int optname,
-+		    char __user *optval, unsigned int optlen)
++		    sockptr_t optval, unsigned int optlen)
 +{
 +	printk(KERN_DEBUG "ignoring setsockopt:0x%x\n", optname);
++	return 0;
++}
++
++static int pvcalls_getsockopt(struct socket *sock, int level, int optname,
++		    char __user *optval, int __user *optlen)
++{
++	printk(KERN_DEBUG "ignoring getsockopt:0x%x\n", optname);
 +	return 0;
 +}
 +
@@ -131,7 +153,7 @@ index 000000000000..9c758addd9c8
 +	.listen = pvcalls_listen,
 +	.shutdown = pvcalls_shutdown,
 +	.setsockopt = pvcalls_setsockopt,
-+	.getsockopt = sock_no_getsockopt,
++	.getsockopt = pvcalls_getsockopt,
 +	.sendmsg = pvcalls_stream_sendmsg,
 +	.recvmsg = pvcalls_stream_recvmsg,
 +	.mmap = sock_no_mmap,
@@ -165,18 +187,18 @@ index 000000000000..7a6147528ebd
 +
 +#endif
 diff --git a/net/ipv4/af_inet.c b/net/ipv4/af_inet.c
-index 70f92aaca411..7bdc2dbdebc7 100644
+index 8267349afe23..167e611f46de 100644
 --- a/net/ipv4/af_inet.c
 +++ b/net/ipv4/af_inet.c
-@@ -118,6 +118,7 @@
- #include <net/l3mdev.h>
+@@ -119,6 +119,7 @@
+ #include <net/compat.h>
  
  #include <trace/events/sock.h>
 +#include <xen/pvcalls.h>
  
  /* The inetsw table contains everything that inet_create needs to
   * build a new socket.
-@@ -1959,6 +1960,11 @@ static int __init inet_init(void)
+@@ -1988,6 +1989,11 @@ static int __init inet_init(void)
  	for (r = &inetsw[0]; r < &inetsw[SOCK_MAX]; ++r)
  		INIT_LIST_HEAD(r);
  
@@ -188,3 +210,6 @@ index 70f92aaca411..7bdc2dbdebc7 100644
  	for (q = inetsw_array; q < &inetsw_array[INETSW_ARRAY_LEN]; ++q)
  		inet_register_protosw(q);
  
+-- 
+2.17.1
+
