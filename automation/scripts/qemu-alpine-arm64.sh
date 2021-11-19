@@ -2,17 +2,6 @@
 
 set -ex
 
-apk update
-apk add \
-  uboot-tools \
-  dtc \
-  curl \
-  git \
-  file \
-  sed \
-  coreutils \
-  py3-requests
-
 cd binaries
 
 mkdir -p rootfs
@@ -72,7 +61,7 @@ cd ../..
 
 # XXX QEMU looks for "efi-virtio.rom" even if it is unneeded
 curl -fsSLO https://github.com/qemu/qemu/raw/v5.2.0/pc-bios/efi-virtio.rom
-./binaries/qemu-system-aarch64 \
+qemu-system-aarch64 \
    -machine virtualization=true \
    -cpu cortex-a57 -machine type=virt \
    -m 1024 -display none \
@@ -106,12 +95,13 @@ rm -f smoke.serial
 set +e
 echo "  virtio scan; dhcp; tftpb 0x40000000 boot.scr; source 0x40000000"| \
 timeout -k 1 720 \
-./binaries/qemu-system-aarch64 \
+qemu-system-aarch64 \
     -machine virtualization=true \
     -cpu cortex-a57 -machine type=virt \
     -m 2048 -monitor none -serial stdio \
     -smp 2 \
     -no-reboot \
+    -nographic \
     -device virtio-net-pci,netdev=n0 \
     -netdev user,id=n0,tftp=binaries \
     -bios binaries/u-boot.bin |& tee smoke.serial
