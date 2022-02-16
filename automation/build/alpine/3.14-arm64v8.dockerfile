@@ -1,4 +1,4 @@
-FROM arm64v8/alpine:3.12
+FROM arm64v8/alpine:3.14
 LABEL maintainer.name="The runX Project" \
       maintainer.email="eve-runx@lists.lfedge.org"
 
