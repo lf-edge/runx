@@ -1,5 +1,3 @@
-FROM --platform=linux/x86_64 busybox:latest AS busybox-x86
-
 FROM arm64v8/alpine:3.12
 LABEL maintainer.name="The runX Project" \
       maintainer.email="eve-runx@lists.lfedge.org"
@@ -96,13 +94,3 @@ RUN \
   # Create rootfs
   cd / && \
   tar cvzf /initrd.tar.gz bin dev etc home init lib mnt opt root sbin usr var
-
-COPY --from=busybox-x86 /bin/busybox /usr/local/bin/busybox-x86
-
-RUN \
-    ln -s /usr/local/bin/busybox-x86 /usr/local/bin/sh && \
-    ln -s /usr/local/bin/busybox-x86 /usr/local/bin/mkdir && \
-    ln -s /usr/local/bin/busybox-x86 /usr/local/bin/cp && \
-    echo '#!/usr/local/bin/sh' >> /usr/local/bin/bash && \
-    echo '/usr/local/bin/sh $*' >> /usr/local/bin/bash && \
-    chmod +x /usr/local/bin/bash
