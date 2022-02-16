@@ -4,7 +4,7 @@ LABEL maintainer.name="The runX Project" \
 
 ENV USER root
 
-ENV XEN_BRANCH=stable-4.14
+ENV XEN_BRANCH=stable-4.16
 RUN mkdir /build
 WORKDIR /build
 
@@ -55,6 +55,14 @@ RUN \
   rm -rf /tmp/* && \
   rm -f /var/cache/apk/* && \
   \
+  # ninja build
+  git clone --branch release git://github.com/ninja-build/ninja.git && \
+  cd ninja && \
+  apk add cmake && \
+  cmake -Bbuild-cmake -H. && \
+  cmake --build build-cmake && \
+  cp build-cmake/ninja /usr/bin && \
+  cd .. && \
   # xen build
   git clone --branch "$XEN_BRANCH" http://xenbits.xen.org/git-http/xen.git  && \
   cd xen && \
